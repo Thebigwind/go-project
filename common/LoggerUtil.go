@@ -69,7 +69,7 @@ func XLogger() *logrus.Logger {
 
 var Logger *logrus.Entry = nil
 
-//var MetaViewLogger *logrus.Entry = nil
+//var ProjectLogger *logrus.Entry = nil
 var DBLogger *logrus.Entry = nil
 
 func LoggerInit(config *LoggerConfig) error {

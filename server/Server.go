@@ -2,7 +2,7 @@ package server
 
 import (
 	"fmt"
-	. "github.com/xtao/metaview/common"
+	. "github.com/Thebigwind/go-project/common"
 	"net"
 	"net/http"
 	"sync"

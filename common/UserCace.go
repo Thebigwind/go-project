@@ -3,7 +3,6 @@ package common
 import (
 	//"errors"
 	"bytes"
-	. "github.com/xtao/xt_message/xt_api_message"
 	"strconv"
 	"strings"
 	"sync"

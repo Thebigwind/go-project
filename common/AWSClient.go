@@ -61,12 +61,12 @@ func NewRgwClient(secretId, secretKey string) (*rgwClient, error) {
 }
 
 /*
-发布metaview时指定rgwserver地址，
+发布project时指定rgwserver地址，
 */
 func NewRgwClient2(secretId, secretKey string) (*rgwClient, error) {
 
 	//从json
-	servers := GlobalMetaviewConfig.RgwConfig.Servers
+	servers := GlobalprojectConfig.RgwConfig.Servers
 
 	cfg, err := rgwConfig(servers, secretId, secretKey, "US")
 	if err != nil {

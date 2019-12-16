@@ -74,7 +74,7 @@ func ParsePowerServer(s string) string {
 	var server string
 
 	if s == "" {
-		server = os.Getenv("METAVIEW_SERVER")
+		server = os.Getenv("Project_SERVER")
 		if server == "" {
 			server = POWER_DEFAULT_SERVER
 		}
@@ -553,7 +553,7 @@ func CountChecksum(dataName string, dataSize int64, sizeLimit int64) (error, str
 
 	f, err := os.OpenFile(dataName, os.O_CREATE|os.O_APPEND|os.O_RDWR, 0660)
 	if err != nil {
-		MetaViewLogger.Errorf("OpenFile error: %s\n", err.Error())
+		ProjectLogger.Errorf("OpenFile error: %s\n", err.Error())
 		return err, "", nil
 	}
 	defer f.Close()
@@ -562,18 +562,18 @@ func CountChecksum(dataName string, dataSize int64, sizeLimit int64) (error, str
 		readBuf := make([]byte, dataSize)
 		readString, err := f.ReadAt(readBuf, pos)
 		if err != nil && err != io.EOF {
-			MetaViewLogger.Errorf("ReadAt error: %s\n", err.Error())
+			ProjectLogger.Errorf("ReadAt error: %s\n", err.Error())
 			return err, "", nil
 		}
 
-		//MetaViewLogger.Infof("pos:%s,readBuf:%s\n", pos, string(readBuf[:readString]))
+		//ProjectLogger.Infof("pos:%s,readBuf:%s\n", pos, string(readBuf[:readString]))
 		ctx := md5.New()
 		ctx.Write([]byte(string(readBuf[:readString])))
 		checkTotal = hex.EncodeToString(ctx.Sum(nil))
 
 	} else {
 		segSize := dataSize / 8
-		//MetaViewLogger.Infof("segSize:%d", segSize)
+		//ProjectLogger.Infof("segSize:%d", segSize)
 
 		nums := [8]int64{0, 1, 2, 3, 4, 5, 6, 7}
 		checksums = make([]string, 0)
@@ -582,15 +582,15 @@ func CountChecksum(dataName string, dataSize int64, sizeLimit int64) (error, str
 			readBuf := make([]byte, 2<<(uint(num)+2))
 			readString, err := f.ReadAt(readBuf, pos)
 			if err != nil && err != io.EOF {
-				MetaViewLogger.Errorf("ReadAt error: %s\n", err.Error())
+				ProjectLogger.Errorf("ReadAt error: %s\n", err.Error())
 				return err, "", nil
 			}
 
-			//MetaViewLogger.Infof("pos:%s,readBuf:%s\n", pos, string(readBuf[:readString]))
+			//ProjectLogger.Infof("pos:%s,readBuf:%s\n", pos, string(readBuf[:readString]))
 			ctx := md5.New()
 			ctx.Write([]byte(string(readBuf[:readString])))
 			check := hex.EncodeToString(ctx.Sum(nil))
-			//MetaViewLogger.Infof("check:%s\n", check)
+			//ProjectLogger.Infof("check:%s\n", check)
 			checksums = append(checksums, check)
 		}
 	}
@@ -804,29 +804,7 @@ func StringModeToInt(inputMode string) (error, int) {
 	return nil, modeInt
 }
 
-func IntAclToString(inputAcl int) string {
-	aclStr := ""
-	if inputAcl == 0 {
-		aclStr = "rgw_perm_none"
-	} else if inputAcl == 1 {
-		aclStr = "rgw_perm_read"
-	} else if inputAcl == 2 {
-		aclStr = "rgw_perm_write"
-	} else if inputAcl == 4 {
-		aclStr = "rgw_perm_read_acp"
-	} else if inputAcl == 8 {
-		aclStr = "rgw_perm_wirte_acp"
-	} else if inputAcl == 10 {
-		aclStr = "rgw_perm_read_objs"
-	} else if inputAcl == 20 {
-		aclStr = "rgw_perm_write_objs"
-	} else if inputAcl == 15 {
-		aclStr = "rgw_perm_full_control"
-	} else {
-		aclStr = strconv.Itoa(inputAcl)
-	}
-	return aclStr
-}
+
 
 func IntAclToStringTest(inputAcl int) string {
 
@@ -838,33 +816,7 @@ func IntAclToStringTest(inputAcl int) string {
 
 	return aclMap[inputAcl]
 }
-func StringAclToInt(aclStr string) (error, int) {
 
-	var err error = nil
-	var acl int
-	if aclStr == "rgw_perm_none" {
-		acl = 0
-	} else if aclStr == "rgw_perm_read" {
-		acl = 1
-	} else if aclStr == "rgw_perm_write" {
-		acl = 2
-	} else if aclStr == "rgw_perm_read_acp" {
-		acl = 4
-	} else if aclStr == "rgw_perm_wirte_acp" {
-		acl = 8
-	} else if aclStr == "rgw_perm_read_objs" {
-		acl = 10
-	} else if aclStr == "rgw_perm_write_objs" {
-		acl = 20
-	} else if aclStr == "rgw_perm_full_control" {
-		acl = 15
-	} else {
-		errors.New("no exist the acl,please check format.")
-	}
-
-	//fmt.Println("modeArray=%s\n,modeInt=%d\n", modeArray, modeInt)
-	return err, acl
-}
 
 func StringAclToIntTest(aclStr string) (error, int) {
 
@@ -938,7 +890,7 @@ func GetCountFromRange(countRange string) (error, int64, int64) {
 	return nil, countGreaterInt64, countLessInt64
 }
 
-type MetaviewEnvSetting struct {
+type ProjectEnvSetting struct {
 	Logfile       string
 	Configfile    string
 	Queue         string
@@ -946,10 +898,10 @@ type MetaviewEnvSetting struct {
 	AccountMethod string
 }
 
-func EnvUtilsParseEnvSetting() *MetaviewEnvSetting {
-	envSetting := &MetaviewEnvSetting{
-		Logfile:    "/var/log/metaview/metaview.log",
-		Configfile: "metaview.json",
+func EnvUtilsParseEnvSetting() *ProjectEnvSetting {
+	envSetting := &ProjectEnvSetting{
+		Logfile:    "/var/log/Project/Project.log",
+		Configfile: "Project.json",
 	}
 	logFile := os.Getenv("LOGFILE")
 	if logFile != "" {
@@ -980,7 +932,7 @@ func EnvUtilsParseEnvSetting() *MetaviewEnvSetting {
 	//}
 
 	envSetting.AccountMethod = "ldap"
-	accoutMethod := os.Getenv("METAVIEW_ACCOUNT_METHOD")
+	accoutMethod := os.Getenv("Project_ACCOUNT_METHOD")
 	//fmt.Println("accountMethod:", accoutMethod)
 	if accoutMethod == "etcd" {
 		envSetting.AccountMethod = "etcd"
@@ -1027,145 +979,6 @@ func TerminalWidth() (int, error) {
 	return int(w.Col), nil
 }
 
-func GetWidth(width string) (error, int64, int64, string) {
-
-	//check the widthSize ,the format: number + letter, and number must before letter.
-	reg := regexp.MustCompile(`^[1-9][0-9]{0,}\w{1,2}`)
-	result := reg.MatchString(width)
-	if result == false {
-		return errors.New("the format is not correct."), 0, 0, ""
-	}
-	//get the number.
-	reg = regexp.MustCompile(`^[1-9][0-9]{0,}`)
-	num := reg.FindString(width)
-	//fmt.Println("num:", num)
-
-	number, err := strconv.ParseInt(num, 10, 64)
-	if err != nil {
-		return errors.New("the format is not correct."), 0, 0, ""
-	}
-
-	//get the unit.
-	reg = regexp.MustCompile(`[a-zA-Z]{1,}`)
-	unit := reg.FindString(width)
-	//fmt.Println("unit:", unit)
-
-	//fmt.Println("length_unit:", strings.Count(unit, ""))
-	//fmt.Println("unit:", unit)
-	if strings.Count(unit, "")-1 <= 2 {
-		var size int64 = 0
-		if unit == "B" || unit == "b" {
-			size = number
-		}
-		if unit == "KB" || unit == "K" || unit == "k" || unit == "kb" {
-			size = number * 1024
-		} else if unit == "MB" || unit == "M" || unit == "m" || unit == "mb" {
-			size = number * 1024 * 1024
-		} else if unit == "GB" || unit == "G" || unit == "g" || unit == "gb" {
-			size = number * 1024 * 1024 * 1024
-		} else if unit == "TB" || unit == "T" || unit == "t" || unit == "tb" {
-			size = number * 1024 * 1024 * 1024 * 1024
-		} else {
-			return errors.New("the format is not correct."), 0, 0, ""
-		}
-
-		//fmt.Println("size:", size)
-		return nil, size, number, unit
-	} else {
-		var time int64 = 0
-		if unit == "second" {
-			time = number
-		} else if unit == "min" {
-			time = number * 60
-		} else if unit == "hour" {
-			time = number * 60 * 60
-		} else if unit == "day" {
-			time = number * 60 * 60 * 24
-		} else if unit == "week" {
-			time = number * 60 * 60 * 24 * 7
-		} else if unit == "month" {
-			time = number * 60 * 60 * 24 * 30 //wait update
-		} else if unit == "year" {
-			time = number * 60 * 60 * 24 * 365 //wait update
-		} else {
-			return errors.New("the format is not correct."), 0, 0, ""
-		}
-
-		return nil, time, number, unit
-	}
-}
-
-func GetStride(stride string) (error, int64, int64, string, bool, bool) {
-	if stride == "latest" {
-		return nil, 0, 0, "", true, true
-	}
-
-	//check the widthSize ,the format: number + letter, and number must before letter.
-	reg := regexp.MustCompile(`^[1-9][0-9]{0,}\w{1,2}`)
-	result := reg.MatchString(stride)
-	if result == false {
-		return errors.New("the format is not correct."), 0, 0, "", false, false
-	}
-	//get the number.
-	reg = regexp.MustCompile(`^[1-9][0-9]{0,}`)
-	num := reg.FindString(stride)
-	//fmt.Println("num:", num)
-
-	number, err := strconv.ParseInt(num, 10, 64)
-	if err != nil {
-		return errors.New("the format is not correct."), 0, 0, "", false, false
-	}
-
-	//get the unit.
-	reg = regexp.MustCompile(`[a-zA-Z]{1,}`)
-	unit := reg.FindString(stride)
-	//fmt.Println("unit:", unit)
-
-	//fmt.Println("length_unit:", strings.Count(unit, ""))
-	//fmt.Println("unit:", unit)
-	if strings.Count(unit, "")-1 <= 2 {
-		var size int64 = 0
-		if unit == "B" || unit == "b" {
-			size = number
-		}
-		if unit == "KB" || unit == "K" || unit == "k" || unit == "kb" {
-			size = number * 1024
-		} else if unit == "MB" || unit == "M" || unit == "m" || unit == "mb" {
-			size = number * 1024 * 1024
-		} else if unit == "GB" || unit == "G" || unit == "g" || unit == "gb" {
-			size = number * 1024 * 1024 * 1024
-		} else if unit == "TB" || unit == "T" || unit == "t" || unit == "tb" {
-			size = number * 1024 * 1024 * 1024 * 1024
-		} else {
-			return errors.New("the format is not correct."), 0, 0, "", false, false
-		}
-
-		//fmt.Println("size:", size)
-		return nil, size, number, unit, false, false
-	} else {
-		var time int64 = 0
-		if unit == "second" {
-			time = number
-		} else if unit == "min" {
-			time = number * 60
-		} else if unit == "hour" {
-			time = number * 60 * 60
-		} else if unit == "day" {
-			time = number * 60 * 60 * 24
-		} else if unit == "week" {
-			time = number * 60 * 60 * 24 * 7
-		} else if unit == "month" {
-			time = number * 60 * 60 * 24 * 30 //wait update
-		} else if unit == "year" {
-			time = number * 60 * 60 * 24 * 365 //wait update
-		} else {
-			return errors.New("the format is not correct."), 0, 0, "", false, false
-		}
-
-		return nil, time, number, unit, true, false
-	}
-
-}
 
 func GetStampTimeStringInt64(timeStamp int64) string {
 
@@ -1190,60 +1003,6 @@ func GetClientUserInfo() *UserAccountInfo {
 	}
 
 	return info
-}
-
-func StringModeToInt2(inputMode string, modeType string) (error, int) {
-
-	if modeType != "dir" && modeType != "file" {
-		return nil, 0
-	}
-	if inputMode == "" {
-		return nil, 0
-	}
-
-	if modeType == "dir" {
-		inputMode = "d" + inputMode
-	}
-
-	if modeType == "file" {
-		inputMode = "-" + inputMode
-	}
-
-	if len(inputMode) != 10 {
-		var err = errors.New("inputMode invalid!")
-		return err, 0
-	}
-
-	modeArray := make([]int, 16, 16)
-	modeArray[0] = 1
-
-	if string(inputMode[0]) == "l" {
-		modeArray[2] = 1
-	} else if string(inputMode[0]) == "d" {
-		modeArray[0] = 0
-		modeArray[1] = 1
-	}
-
-	for i := 1; i <= 9; i++ {
-		if string(inputMode[i]) != "-" {
-			modeArray[i+6] = 1
-		}
-	}
-
-	var modeInt int = 0
-	for j := 0; j <= 15; j++ {
-		if modeArray[15-j] == 1 {
-			if j == 0 {
-				modeInt += 1
-			} else {
-				modeInt += 2 << (uint(j - 1))
-			}
-		}
-	}
-
-	//fmt.Println("modeInt:", modeInt)
-	//fmt.Println("modeArray=%s\n,modeInt=%d\n", modeArray, modeInt)
-	return nil, modeInt
 }
 
 func GetStampTimeString(timeStamp int) string {
@@ -1427,26 +1186,7 @@ func JuddgeTime(timeString string) error {
 	return nil
 }
 
-/*
-func JuddgeTimeStamp2(timeString string, timeEnd bool) (error, int) {
-	// "2017-05-21 17:15:04" to 1495358104 int
-	if timeString == "" {
-		if timeEnd {
-			return nil, 4294967295 //2147483647 max value of int32, 4294967295 max of oid(uint32)
-		} else {
-			return nil, 0
-		}
-	}
 
-	loc, _ := time.LoadLocation("Local")
-	theTime, err := time.ParseInLocation("2006-01-02 15:04:05", timeString, loc)
-	if err != nil {
-		return err, 0
-	}
-	timeStamp := theTime.Unix()
-	return nil, int(timeStamp)
-}
-*/
 func JuddgeTimeStamp(timeString string) (error, string) {
 	/* "2017-05-21 17:15:04" to "1495358104" string*/
 	if timeString == "" {

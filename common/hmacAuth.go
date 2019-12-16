@@ -12,7 +12,7 @@ import (
 )
 
 const (
-	AccountHeader = "X-XTAO-Account"
+	AccountHeader = "TEST-Account"
 )
 const (
 	// common parameters

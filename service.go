@@ -150,18 +150,7 @@ func ServerStart(arguments map[string]string) error {
 		powerMgr.Start()
 	}
 
-	/*
-	 * Step 9: init dump manager and register signal handler for USR1 and USR2
-	 */
-	/*
-		Logger.Infof("project now init dump manager and register signal handler.")
-		dumpMgr := NewDumpMgr(projectConfig.RestConfig.ServerLimit, 512, loglvl)
-		if dumpMgr == nil {
-			Logger.Errorf("Fail to init dump manager")
-			return errors.New("Fail to init dump manager")
-		}
-		dumpMgr.Start()
-	*/
+
 
 	/*
 		Local development test, no ldap environment, import local users to the cache

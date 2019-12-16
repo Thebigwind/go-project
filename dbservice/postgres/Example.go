@@ -11,11 +11,11 @@ import (
 	"strings"
 	"time"
 )
-func (db *dbService) ChownMeta(NewUserUid, NewUser string,
+func (db *dbService) ChownDataOwner(NewUserUid, NewUser string,
 	Key, Value, Uid string) error {
 
 	// Test if the user have this tag
-	querySql := "SELECT xa_id from r_xa_main WHERE xa_name = $1 AND xa_uid = " + Uid
+	querySql := "SELECT xa_id from t_test_main WHERE xa_name = $1 AND xa_uid = " + Uid
 	querySql += " AND xa_value = $2 "
 
 	DBLogger.Debugf("querySql:%s", querySql)
@@ -31,7 +31,7 @@ func (db *dbService) ChownMeta(NewUserUid, NewUser string,
 	}
 
 	// Test if the new user is in the blacklist
-	querySql = "SELECT xa_id from r_xa_main WHERE black_list @> string_to_array($3, '') "
+	querySql = "SELECT xa_id from t_test_main WHERE black_list @> string_to_array($3, '') "
 	querySql += " AND xa_name = $1 AND xa_uid = " + Uid
 	querySql += " AND xa_value = $2  "
 
@@ -47,7 +47,7 @@ func (db *dbService) ChownMeta(NewUserUid, NewUser string,
 	}
 
 	// Test if the NewUser already have the tag
-	querySql = "SELECT xa_id from r_xa_main WHERE xa_name = $1 AND xa_uid = " + NewUserUid
+	querySql = "SELECT xa_id from t_test_main WHERE xa_name = $1 AND xa_uid = " + NewUserUid
 	querySql += " AND xa_value = $2 "
 
 	DBLogger.Debugf("querySql:%s", querySql)
@@ -62,7 +62,7 @@ func (db *dbService) ChownMeta(NewUserUid, NewUser string,
 	}
 
 	// Update the tag's info
-	updateSql := "UPDATE r_xa_main SET xa_uid=$3 WHERE xa_name=$1 AND xa_uid = $4 "
+	updateSql := "UPDATE t_test_main SET xa_uid=$3 WHERE xa_name=$1 AND xa_uid = $4 "
 	updateSql += "  AND xa_value = $2  "
 
 	DBLogger.Debugf("updateSql:%s", updateSql)
@@ -85,7 +85,7 @@ func (db *dbService) ChownMeta(NewUserUid, NewUser string,
 func (db *dbService) GetFstype(fs_id string) (error, string) {
 
 	var fs_type string = ""
-	querySql := "SELECT fs_type FROM r_fs_main where fs_id = $1"
+	querySql := "SELECT fs_type FROM t_file_system_main where fs_id = $1"
 	rows, err := db.Query(querySql, fs_id)
 	if err != nil {
 		db.QueryErr(err)
@@ -110,7 +110,7 @@ func (db *dbService) GetFstype(fs_id string) (error, string) {
  */
 
 func (db *dbService) AddUser(userInfo *DBUserEntry) error {
-	insertSql := "INSERT INTO r_user_main(user_id,user_name,user_type,user_info,create_ts,modify_ts) "
+	insertSql := "INSERT INTO t_user_test(user_id,user_name,user_type,user_info,create_ts,modify_ts) "
 	insertSql += " VALUES($1,$2,$3,$4,$5,$6)"
 	DBLogger.Debugf(" add user sql:%s", insertSql)
 
@@ -187,7 +187,7 @@ func (db *dbService) AddUsers(usersInfo []DBUserEntry) error {
 		valueArgs = append(valueArgs, time.Now().Unix())
 	}
 
-	smt := "INSERT INTO r_user_main(user_id,user_name,user_type,user_info,create_ts,modify_ts) "
+	smt := "INSERT INTO t_user_test(user_id,user_name,user_type,user_info,create_ts,modify_ts) "
 	smt += "     VALUES %s ON CONFLICT (user_id)  "
 	smt += " DO nothing "
 	//smt += "  DO UPDATE SET user_id = excluded.user_id, user_name = excluded.user_name, user_type = excluded.user_type "
@@ -209,7 +209,7 @@ func (db *dbService) AddUsers(usersInfo []DBUserEntry) error {
 
 
 func (db *dbService) GetDBUsers() (error, []DBUserEntry) {
-	rows, err := db.Query("SELECT * FROM r_user_main ORDER BY user_id")
+	rows, err := db.Query("SELECT * FROM t_user_test ORDER BY user_id")
 	if err != nil {
 		db.QueryErr(err)
 		DBLogger.Errorf("DBService: query error %s", err.Error())
@@ -255,7 +255,7 @@ func (db *dbService) SetMetaObj(key, value, authority, uid, objId, clusterId str
 		1: "public", 2: "group", 4: "private",
 	}
 
-	querySql := " SELECT xa_mode FROM r_xa_main WHERE xa_name = $1 AND xa_value = $2 AND xa_uid = $3"
+	querySql := " SELECT xa_mode FROM t_test_main WHERE xa_name = $1 AND xa_value = $2 AND xa_uid = $3"
 	DBLogger.Debugf("querySql:%s", querySql)
 
 	rows, err := db.Query(querySql, key, value, uid)
@@ -286,13 +286,13 @@ func (db *dbService) SetMetaObj(key, value, authority, uid, objId, clusterId str
 		insertSql += " DECLARE "
 		insertSql += "	v_xa_id bigint; "
 		insertSql += " begin "
-		insertSql += " INSERT INTO r_xa_main (xa_name, xa_value, xa_mode, xa_uid, create_ts) "
+		insertSql += " INSERT INTO t_test_main (xa_name, xa_value, xa_mode, xa_uid, create_ts) "
 		insertSql += " SELECT E'" + filterSqlInject(key) + "', E'" + filterSqlInject(value) + "', " + strconv.Itoa(modeMap[authority]) + "," + uid + ", extract(epoch from now())::bigint"
 		insertSql += " WHERE NOT EXISTS ("
-		insertSql += "       SELECT xa_id FROM r_xa_main "
+		insertSql += "       SELECT xa_id FROM t_test_main "
 		insertSql += "        WHERE xa_name = E'" + filterSqlInject(key) + "' AND xa_value = E'" + filterSqlInject(value) + "' AND xa_uid =" + uid
 		insertSql += "       );"
-		insertSql += " SELECT xa_id into v_xa_id from r_xa_main"
+		insertSql += " SELECT xa_id into v_xa_id from t_test_main"
 		insertSql += "  WHERE xa_name = E'" + filterSqlInject(key) + "' AND xa_value = E'" + filterSqlInject(value) + "' AND xa_uid = " + uid + ";"
 		insertSql += " DELETE FROM r_xa_map a "
 		insertSql += "  WHERE a.obj_id = '" + objId + "' AND a.fs_id = '" + clusterId + "' AND a.xa_id = v_xa_id; "

@@ -122,8 +122,8 @@ func GetkafkaEtcdConfig() (error, []string, string) {
 }
 
 func GetkafkaJsonConfig() (error, []string, string) {
-	servers := GlobalMetaviewConfig.KafkaConfig.Servers
-	types := GlobalMetaviewConfig.KafkaConfig.Type
+	servers := GlobalProjectConfig.KafkaConfig.Servers
+	types := GlobalProjectConfig.KafkaConfig.Type
 
 	var err error
 	if servers == "" {
