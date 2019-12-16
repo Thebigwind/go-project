@@ -18,7 +18,6 @@ import (
 	"io"
 	"io/ioutil"
 	//"log"
-	. "github.com/xtao/xt_message/xt_api_message"
 	"net/http"
 	"os"
 	"os/user"
